@@ -22,9 +22,12 @@ target=paramiko.SSHClient()
 target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 target.connect(target_addr, username='ubuntu', pkey= private_key_path, sock=jumpbox_channel)
 
-stdin, stdout, stderr = target.exec_command("cat clusterBenchmark.txt")
-for line in stdout.read().split(b'\n'):
-  print(str(line))
+stdin, stdout, stderr = target.exec_command("mysql -u root -pClusterPassword -e 'USE sakila;SELECT * FROM store;'")
+
+result = stdout.read().decode("utf-8")
+
+with open('store_result.txt', 'w') as f:
+    f.write(result)
 
 target.close()
 jumpbox.close()
