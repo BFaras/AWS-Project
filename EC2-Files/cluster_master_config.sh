@@ -1,73 +1,108 @@
+#!/bin/bash
 
-#all nodes set up to install sql-cluster and link mysqlc to cluster
-sudo apt-get update && sudo apt-get -y install libncurses5
 
-sudo mkdir -p /opt/mysqlcluster/home
-cd /opt/mysqlcluster/home
-sudo wget http://dev.mysql.com/get/Downloads/MySQL-Cluster-7.2/mysql-cluster-gpl-7.2.1-linux2.6-x86_64.tar.gz
-sudo tar xvf mysql-cluster-gpl-7.2.1-linux2.6-x86_64.tar.gz
-sudo ln -s mysql-cluster-gpl-7.2.1-linux2.6-x86_64 mysqlc
-echo 'export MYSQLC_HOME=/opt/mysqlcluster/home/mysqlc' | sudo tee /etc/profile.d/mysqlc.sh
-echo 'export PATH=$MYSQLC_HOME/bin:$PATH' | sudo tee -a /etc/profile.d/mysqlc.sh
-source /etc/profile.d/mysqlc.sh
+sudo apt update
+sudo apt install libaio1 libmecab2 libncurses5 sysbench -y
 
-#master set up
-mkdir -p /opt/mysqlcluster/deploy
-cd /opt/mysqlcluster/deploy
-mkdir conf
-mkdir mysqld_data
-mkdir ndb_data
-cd conf
 
-echo '[mysqld]
-ndbcluster
-datadir=/opt/mysqlcluster/deploy/mysqld_data
-basedir=/opt/mysqlcluster/home/mysqlc
-port=3306' | sudo tee /opt/mysqlcluster/deploy/conf/my.cnf
+wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster-community-management-server_7.6.6-1ubuntu18.04_amd64.deb
+sudo dpkg -i mysql-cluster-community-management-server_7.6.6-1ubuntu18.04_amd64.deb
 
-echo '[ndb_mgmd]
-hostname=ip-172-31-30-117.ec2.internal
-datadir=/opt/mysqlcluster/deploy/ndb_data
-nodeid=1
 
+sudo mkdir /var/lib/mysql-cluster
+
+echo "
 [ndbd default]
-noofreplicas=3
-datadir=/opt/mysqlcluster/deploy/ndb_data
+# Options affecting ndbd processes on all data nodes:
+NoOfReplicas=3 # Number of replicas
+
+[ndb_mgmd]
+# Management process options:
+hostname=ip-172-31-30-10.ec2.internal # Hostname of manager
+datadir=/var/lib/mysql-cluster      # Directory for the log files
+NodeId=1                            # Node ID for this data node
 
 [ndbd]
-hostname=ip-172-31-31-180.ec2.internal
-nodeid=2
+hostname=ip-172-31-30-11.ec2.internal # Hostname/IP of the first data node
+NodeId=2                            # Node ID for this data node
+datadir=/usr/local/mysql/data       # Remote directory for the data files
 
 [ndbd]
-hostname=ip-172-31-16-239.ec2.internal
-nodeid=3
+hostname=ip-172-31-30-12.ec2.internal # Hostname/IP of the second data node
+NodeId=3                            # Node ID for this data node
+datadir=/usr/local/mysql/data       # Remote directory for the data files
 
 [ndbd]
-hostname=ip-172-31-25-143.ec2.internal
-nodeid=4
+hostname=ip-172-31-30-13.ec2.internal # Hostname/IP of the third data node
+NodeId=4                            # Node ID for this data node           
+datadir=/usr/local/mysql/data       # Remote directory for the data files
+
 
 [mysqld]
-nodeid=50' | sudo tee /opt/mysqlcluster/deploy/conf/config.ini
-
-#initialize database
-cd /opt/mysqlcluster/home/mysqlc
-sudo scripts/mysql_install_db --datadir=/opt/mysqlcluster/deploy/mysqld_data
-
-#run database
-cd /opt/mysqlcluster/home/mysqlc/bin
-sudo mkdir -p /usr/local/mysql/mysql-cluster
-sudo chown -R $USER:$USER /usr/local/mysql/mysql-cluster
-sudo chown -R $USER:$USER /opt/mysqlcluster/deploy/ndb_data
-ndb_mgmd -f /opt/mysqlcluster/deploy/conf/config.ini –initial –configdir=/opt/mysqlcluster/deploy/conf
+# SQL node options:
+nodeid=50
+" | tee -a /var/lib/mysql-cluster/config.ini
 
 
+echo "
+[Unit]
+Description=MySQL NDB Cluster Management Server
+After=network.target auditd.service
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/ndb_mgmd -f /var/lib/mysql-cluster/config.ini
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+" | tee -a /etc/systemd/system/ndb_mgmd.service
 
 
-#sakila set up
+sudo systemctl daemon-reload
+sudo systemctl enable ndb_mgmd
+sudo systemctl start ndb_mgmd
+
+
+wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster_7.6.6-1ubuntu18.04_amd64.deb-bundle.tar
+mkdir install
+tar -xvf mysql-cluster_7.6.6-1ubuntu18.04_amd64.deb-bundle.tar -C install/
+cd install
+
+sudo dpkg -i mysql-common_7.6.6-1ubuntu18.04_amd64.deb
+sudo dpkg -i mysql-cluster-community-client_7.6.6-1ubuntu18.04_amd64.deb
+sudo dpkg -i mysql-client_7.6.6-1ubuntu18.04_amd64.deb
+
+# To automatate assigning a password
+sudo debconf-set-selections <<< 'mysql-cluster-community-server_7.6.6 mysql-cluster-community-server/root-pass password ClusterPassword'
+sudo debconf-set-selections <<< 'mysql-cluster-community-server_7.6.6 mysql-cluster-community-server/re-root-pass password ClusterPassword'
+sudo debconf-set-selections <<< "mysql-cluster-community-server_7.6.6 mysql-server/default-auth-override select Use Legacy Authentication Method (Retain MySQL 5.x Compatibility)"
+
+sudo dpkg -i mysql-cluster-community-server_7.6.6-1ubuntu18.04_amd64.deb
+sudo dpkg -i mysql-server_7.6.6-1ubuntu18.04_amd64.deb
+
+
+echo "
+[mysqld]
+# Options for mysqld process:
+ndbcluster                      # run NDB storage engine
+
+[mysql_cluster]
+# Options for NDB Cluster processes:
+ndb-connectstring=ip-172-31-30-10.ec2.internal  # location of management server
+" | tee -a /etc/mysql/my.cnf
+
+
+sudo systemctl restart mysql
+sudo systemctl enable mysql
+
+
 cd ~
 wget https://downloads.mysql.com/docs/sakila-db.tar.gz
 tar -xf sakila-db.tar.gz
 rm sakila-db.tar.gz
 
-sudo mysql -u root --e "SOURCE sakila-db/sakila-schema.sql;"
-sudo mysql -u root --e "SOURCE sakila-db/sakila-data.sql;"
+sudo mysql -u root -pClusterPassword -e "SOURCE sakila-db/sakila-schema.sql;"
+sudo mysql -u root -pClusterPassword -e "SOURCE sakila-db/sakila-data.sql;"
