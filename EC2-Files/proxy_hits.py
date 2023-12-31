@@ -3,12 +3,12 @@ import time
 import mysql.connector
 import random
 
-def execute_queries(ip, name, query):
+def execute_queries(ip, name, query,target):
 
 
 
     with mysql.connector.connect(
-        host=IPs[name],
+        host=target,
         user='ubuntu',
         password='finalProject.pem',
         database='sakila',
