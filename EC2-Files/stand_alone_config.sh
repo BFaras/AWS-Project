@@ -11,8 +11,9 @@ tar -xf sakila-db.tar.gz
 
 echo "sakila downloaded in $(pwd)"
 
-sudo mysql -e "SOURCE sakila-db/sakila-schema.sql;"
-sudo mysql -e "SOURCE sakila-db/sakila-data.sql;"
-sudo mysql -e "USE sakila;"
+sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root -e  -e "SOURCE sakila-db/sakila-schema.sql;"
+sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root -e  -e "SOURCE sakila-db/sakila-data.sql;"
+sudo /opt/mysqlcluster/home/mysqlc/bin/mysql -u root -e  -e "USE sakila;"
+
 
 echo "sakila databse is ready to use"
