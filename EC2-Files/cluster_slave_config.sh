@@ -2,6 +2,7 @@
 
 sudo apt update
 sudo apt install libclass-methodmaker-perl libncurses5 -y
+sudo apt install mysql-server -y
 
 wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster-community-data-node_7.6.6-1ubuntu18.04_amd64.deb
 sudo dpkg -i mysql-cluster-community-data-node_7.6.6-1ubuntu18.04_amd64.deb

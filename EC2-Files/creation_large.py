@@ -15,10 +15,35 @@ session = boto3.Session(
 ec2_client = session.client('ec2')
 
 # Launch t2.large EC2 instances for stand-alone
-t2_instance_response_alone = ec2_client.run_instances(
+proxy_instance = ec2_client.run_instances(
     ImageId='ami-053b0d53c279acc90',
     UserData=open('proxy_config.sh').read(),
     PrivateIpAddress = '172.31.30.30',
+    InstanceType='t2.large',
+    MinCount=1,
+    MaxCount=1,
+    Placement={'AvailabilityZone': 'us-east-1a'},
+    KeyName='finalProject',
+    SecurityGroups=[security_group_name]
+)
+
+gatekeeper_instance = ec2_client.run_instances(
+    ImageId='ami-053b0d53c279acc90',
+    UserData=open('proxy_config.sh').read(),
+    PrivateIpAddress = '172.31.30.35',
+    InstanceType='t2.large',
+    MinCount=1,
+    MaxCount=1,
+    Placement={'AvailabilityZone': 'us-east-1a'},
+    KeyName='finalProject',
+    SecurityGroups=[security_group_name]
+)
+
+
+trusted_host_instance = ec2_client.run_instances(
+    ImageId='ami-053b0d53c279acc90',
+    UserData=open('proxy_config.sh').read(),
+    PrivateIpAddress = '172.31.30.40',
     InstanceType='t2.large',
     MinCount=1,
     MaxCount=1,

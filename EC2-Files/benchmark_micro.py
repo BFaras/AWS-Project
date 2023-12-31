@@ -3,7 +3,7 @@ import paramiko
 
 def benchmarking_alone():
     # Replace these with your actual values
-    ec2_instance_ip = '23.20.35.0'
+    ec2_instance_ip = '54.167.1.228'
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
     #command used by sysbench for benchmarking 
@@ -39,7 +39,7 @@ def benchmarking_alone():
 
 def benchmarking_cluster():
     # Replace these with your actual values
-    ec2_instance_ip = '18.212.249.223'
+    ec2_instance_ip = '54.221.8.227'
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
     #command used by sysbench for benchmarking 
