@@ -3,16 +3,7 @@ import time
 import mysql.connector
 import random
 
-IPs = [
-    'master': 'ip-172-31-17-1.ec2.internal',
-    'slave1': 'ip-172-31-17-2.ec2.internal',
-    'slave2': 'ip-172-31-17-3.ec2.internal',
-    'slave3': 'ip-172-31-17-4.ec2.internal'
-]
-
-
 def execute_queries(ip, name, query):
-    # Connect to MySQL server through SSH tunnel
 
 
 
