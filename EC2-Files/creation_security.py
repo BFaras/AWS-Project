@@ -22,7 +22,7 @@ security_group_response = ec2_client.create_security_group(
 
 security_group_id = security_group_response['GroupId']
 
-# Authorize Security Group Ingress for SSH and HTTP
+# Authorize Security Group Ingress for SSH 
 ec2_client.authorize_security_group_ingress(
     GroupId=security_group_id,
     IpProtocol='tcp',
@@ -30,26 +30,3 @@ ec2_client.authorize_security_group_ingress(
     ToPort=22,
     CidrIp='0.0.0.0/0'
 )
-
-ec2_client.authorize_security_group_ingress(
-    GroupId=security_group_id,
-    IpProtocol='tcp',
-    FromPort=80,
-    ToPort=80,
-    CidrIp='0.0.0.0/0'
-)
-
-# Launch t2.micro EC2 instances
-t2_instance_response = ec2_client.run_instances(
-    ImageId='ami-053b0d53c279acc90',
-    InstanceType='t2.micro',
-    MinCount=4,
-    MaxCount=4,
-    Placement={'AvailabilityZone': 'us-east-1a'},
-    KeyName='finalProject',
-    SecurityGroups=[security_group_name]
-)
-
-# Save the created security group id to a file for future reference
-with open('security_group_id.txt', 'w') as f:
-    f.write(security_group_id)

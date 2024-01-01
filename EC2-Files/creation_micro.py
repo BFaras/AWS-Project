@@ -62,6 +62,7 @@ t2_instance_response_cluster = ec2_client.run_instances(
     Placement={'AvailabilityZone': 'us-east-1a'},
     KeyName='finalProject',
     SecurityGroups=[security_group_name]
+
 )
 
 t2_instance_response_cluster = ec2_client.run_instances(
@@ -75,15 +76,3 @@ t2_instance_response_cluster = ec2_client.run_instances(
     KeyName='finalProject',
     SecurityGroups=[security_group_name]
 )
-
-# Extract instance IDs and save to a file
-instance_ids_cluster = [instance['InstanceId'] for instance in t2_instance_response_cluster['Instances']]
-
-instance_ids_alone = [instance['InstanceId'] for instance in t2_instance_response_alone['Instances']]
-
-with open('instance_ids.txt', 'w') as f:
-    for instance_id in instance_ids_cluster:
-        f.write(instance_id + '\n')
-    f.write("------------------------------------------------"+ '\n')
-    for instance_id in instance_ids_alone:
-        f.write(instance_id + '\n')

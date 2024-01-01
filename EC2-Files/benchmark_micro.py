@@ -3,7 +3,7 @@ import paramiko
 
 def benchmarking_alone():
     # Replace these with your actual values
-    ec2_instance_ip = '54.167.1.228'
+    ec2_instance_ip = '18.207.143.186'
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
     #command used by sysbench for benchmarking 
@@ -39,7 +39,7 @@ def benchmarking_alone():
 
 def benchmarking_cluster():
     # Replace these with your actual values
-    ec2_instance_ip = '54.221.8.227'
+    ec2_instance_ip = '54.82.109.128'
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
     #command used by sysbench for benchmarking 
@@ -80,4 +80,7 @@ def get_file_EC2_instance(ssh_client,local_path,remote_path):
 
 
 if __name__ == "__main__":
+    print("start benchmarking standalone")
+    benchmarking_alone()
+    print("start benchmarking cluster")
     benchmarking_cluster()
