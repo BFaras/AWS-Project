@@ -26,7 +26,7 @@ def direct_hit(query):
     target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     target.connect(target_addr, username='ubuntu', pkey= private_key_path, sock=proxy_channel)
 
-    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pClusterPassword -e 'USE sakila;{query};'")
+    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pBlank -e 'USE sakila;{query};'")
 
     result = stdout.read().decode("utf-8")
 
@@ -39,7 +39,7 @@ def direct_hit(query):
 def random_hit(query):
     proxy_public_addr = '18.212.208.229'
     proxy_private_addr = '172.31.30.30'
-    target_addr = random.choice(['172.31.30.10','172.31.30.11','172.31.30.12','172.31.30.13'])
+    target_addr = random.choice(['172.31.30.11','172.31.30.12','172.31.30.13'])
 
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
@@ -56,7 +56,7 @@ def random_hit(query):
     target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     target.connect(target_addr, username='ubuntu', pkey= private_key_path, sock=proxy_channel)
 
-    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pClusterPassword -e 'USE sakila;{query};'")
+    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pBlank -e 'USE sakila;{query};'")
 
     result = stdout.read().decode("utf-8")
 
@@ -87,7 +87,7 @@ def customized_hit(query):
     ping_times = {target: measure_ping_time(target) for target in target_addrs}
 
     # Choose the target with the lowest ping time
-    target_addr = min(ping_times, key=ping_times.get)
+    target_addr = min(ping_times, key=ping_times.get())
 
     proxy = paramiko.SSHClient()
     proxy.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -102,7 +102,7 @@ def customized_hit(query):
     target.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     target.connect(target_addr, username='ubuntu', pkey=private_key_path, sock=proxy_channel)
 
-    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pClusterPassword -e 'USE sakila;{query};'")
+    stdin, stdout, stderr = target.exec_command(f"mysql -u root -pBlank -e 'USE sakila;{query};'")
 
     result = stdout.read().decode("utf-8")
 

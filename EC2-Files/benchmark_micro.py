@@ -43,9 +43,9 @@ def benchmarking_cluster():
     private_key_path = paramiko.RSAKey.from_private_key_file("finalProject.pem")
 
     #command used by sysbench for benchmarking 
-    prepare_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=ClusterPassword  prepare"
-    run_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=ClusterPassword  --num-threads=6 --max-time=60 --max-requests=0 run > clusterBenchmark.txt"
-    clean_up_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=ClusterPassword cleanup"
+    prepare_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=Blank  prepare"
+    run_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=Blank  --num-threads=6 --max-time=60 --max-requests=0 run > clusterBenchmark.txt"
+    clean_up_sakila = "sudo sysbench oltp_read_write --table-size=100000 --mysql-db=sakila --db-driver=mysql --mysql-user=root --mysql-password=Blank cleanup"
     
     # Create an SSH client
     ssh = paramiko.SSHClient()
